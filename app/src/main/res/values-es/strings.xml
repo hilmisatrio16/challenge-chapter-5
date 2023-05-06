@@ -44,4 +44,5 @@
     <string name="enter_address">Ingresa la direccion</string>
     <string name="image_list_film">lista de imágenes película</string>
     <string name="homepage_information">La página de inicio no funciona</string>
+    <string name="login_success">iniciado sesión con éxito</string>
 </resources>

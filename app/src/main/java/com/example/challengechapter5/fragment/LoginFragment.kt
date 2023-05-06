@@ -1,20 +1,28 @@
 package com.example.challengechapter5.fragment
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.challengechapter5.R
 import com.example.challengechapter5.databinding.FragmentLoginBinding
+import com.example.challengechapter5.dsprefs.DataStoreUser
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
     private lateinit var binding : FragmentLoginBinding
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var dataStoreUser: DataStoreUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -22,6 +30,10 @@ class LoginFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentLoginBinding.inflate(layoutInflater, container, false)
+        dataStoreUser = DataStoreUser.getInstance(requireContext().applicationContext)
+
+        checkActiveAccount()
+
         return binding.root
     }
 
@@ -32,6 +44,7 @@ class LoginFragment : Fragment() {
 
         binding.btnLogin.setOnClickListener {
             loginAccount()
+//            deactivateAccount()
         }
 
         binding.btnRegister.setOnClickListener {
@@ -39,14 +52,14 @@ class LoginFragment : Fragment() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        if(firebaseAuth.currentUser != null){
-            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-        }
+    private fun checkActiveAccount(){
+        dataStoreUser.statusUser.asLiveData().observe(viewLifecycleOwner, Observer {
+            Log.d("DS", it.toString())
+            if(it.toString() == "active"){
+                findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+            }
+        })
     }
-
     private fun loginAccount() {
         val email = binding.inputEmail.text.toString()
         val password = binding.inputPassword.text.toString()
@@ -54,10 +67,13 @@ class LoginFragment : Fragment() {
         if(email.isNotEmpty() && password.isNotEmpty()){
                 firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
                     if(it.isSuccessful){
-                        val bundle = Bundle().apply {
-                            putString(TAG_EMAIL, email)
+
+                        lifecycleScope.launch {
+                            dataStoreUser.saveDataUser("active", email)
                         }
-                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment, bundle)
+                        Toast.makeText(context, R.string.login_success, Toast.LENGTH_SHORT).show()
+
+                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                     }else{
                         Toast.makeText(context, it.exception.toString(), Toast.LENGTH_SHORT).show()
                     }
@@ -67,9 +83,5 @@ class LoginFragment : Fragment() {
         }
     }
 
-
-    companion object{
-        const val TAG_EMAIL = "tagemail"
-    }
 
 }

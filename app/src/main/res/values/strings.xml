@@ -43,4 +43,5 @@
     <string name="enter_address">Enter Address</string>
     <string name="image_list_film">image list film</string>
     <string name="homepage_information">Homepage is not work</string>
+    <string name="login_success">Login successful</string>
 </resources>

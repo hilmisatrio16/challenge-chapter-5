@@ -66,13 +66,11 @@ class RegisterFragment : Fragment() {
                 firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
                     if(it.isSuccessful){
                         val getUserAuth = Firebase.auth.currentUser
-                        val bundle = Bundle()
                         getUserAuth?.let {it_auth->
-                            bundle.putString(LoginFragment.TAG_EMAIL, it_auth.email)
                             insertDataUser(username, it_auth.email!!)
                         }
                         Toast.makeText(context, R.string.register_success, Toast.LENGTH_SHORT).show()
-                        findNavController().navigate(R.id.action_registerFragment_to_homeFragment, bundle)
+                        findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
                     }else{
                         Toast.makeText(context, it.exception.toString(), Toast.LENGTH_SHORT).show()
                     }

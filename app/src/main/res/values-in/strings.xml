@@ -43,5 +43,6 @@
     <string name="enter_address">Enter Address</string>
     <string name="image_list_film">image list film</string>
     <string name="homepage_information">Homepage sedang tidak aktif</string>
+    <string name="login_success">Login berhasil</string>
 
 </resources>

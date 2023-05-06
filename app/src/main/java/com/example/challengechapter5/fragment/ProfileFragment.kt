@@ -2,23 +2,31 @@ package com.example.challengechapter5.fragment
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.challengechapter5.R
+import com.example.challengechapter5.databinding.FragmentLoginBinding
 import com.example.challengechapter5.databinding.FragmentProfileBinding
+import com.example.challengechapter5.dsprefs.DataStoreUser
 import com.example.challengechapter5.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
     private lateinit var binding : FragmentProfileBinding
     private lateinit var userViewModel: UserViewModel
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var dataStoreUser: DataStoreUser
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,6 +34,7 @@ class ProfileFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentProfileBinding.inflate(layoutInflater, container, false)
+
         return binding.root
     }
 
@@ -35,6 +44,9 @@ class ProfileFragment : Fragment() {
         userViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
 
         firebaseAuth = FirebaseAuth.getInstance()
+
+        dataStoreUser = DataStoreUser.getInstance(requireContext().applicationContext)
+
 
         getProfileUser(firebaseAuth.currentUser!!.email)
 
@@ -58,8 +70,21 @@ class ProfileFragment : Fragment() {
             }
 
             setPositiveButton("Sign Out"){ _, _ ->
-                firebaseAuth.signOut()
-                findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
+
+
+                lifecycleScope.launch {
+                    dataStoreUser.deleteDataUser()
+                }
+
+                dataStoreUser.statusUser.asLiveData().observe(viewLifecycleOwner, Observer {
+                    if(it.isNullOrEmpty()){
+                        firebaseAuth.signOut()
+                        findNavController().navigate(R.id.action_profileFragment_to_loginFragment)
+                    }
+                    Log.d("OUTE", it.toString())
+                })
+
+
             }
         }
 
